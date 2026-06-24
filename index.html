@@ -50,7 +50,11 @@
     .start-screen .word-count{font-size:16px;color:#5a7a9a;margin-bottom:24px}
     .btn-start{background:#1e3a7a;border:none;padding:16px 60px;border-radius:60px;font-weight:700;font-size:20px;color:#fff;box-shadow:0 8px 24px rgba(30,58,122,0.25);cursor:pointer;transition:.12s}
     .btn-start:active{transform:scale(0.95);background:#16315f}
-    .timer{font-size:16px;color:#4c7dff;font-weight:600;margin-bottom:6px;min-height:28px}
+    .timer{font-size:16px;color:#4c7dff;font-weight:600;margin-bottom:6px;min-height:28px;text-align:center}
+    .complete-screen{text-align:center;padding:30px 10px}
+    .complete-screen .unit-name{font-size:24px;font-weight:600;color:#1a2639;margin-bottom:8px}
+    .complete-screen .time-display{font-size:18px;color:#4c7dff;margin-bottom:8px}
+    .complete-screen .stats-summary{color:#5a7a9a;font-size:15px;margin-bottom:20px}
     @media(max-width:460px){.options-grid{gap:8px}.option{font-size:15px;padding:12px 4px}.word-en{font-size:28px}.card{padding:16px 14px}.start-screen .unit-name{font-size:20px}}
   </style>
 </head>
@@ -71,12 +75,25 @@
       <button class="filter-btn" data-unit="Unit 6 Information and Society">🌐 Unit6</button>
     </div>
   </div>
+
+  <!-- 训练卡片 -->
   <div class="card" id="trainingCard">
     <div class="timer" id="timerDisplay">⏱️ 00:00</div>
-    <div id="trainingContent">
-      <!-- 由 JS 动态渲染：开始界面 或 单词训练 -->
+    <div id="wordArea">
+      <!-- 由 JS 动态渲染 -->
+    </div>
+    <div id="optionsArea">
+      <!-- 由 JS 动态渲染 -->
+    </div>
+    <div id="actionArea">
+      <!-- 由 JS 动态渲染 -->
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressBar"></div>
     </div>
   </div>
+
+  <!-- 统计卡片 -->
   <div class="card">
     <div class="stats-grid">
       <span>✅ 正确 <span class="num" id="correctCount">0</span></span>
@@ -89,6 +106,8 @@
       <button class="export-btn" id="exportBtn">📤 导出薄弱表</button>
     </div>
   </div>
+
+  <!-- 薄弱词汇卡片 -->
   <div class="card weak-list" id="weakListCard">
     <div class="weak-title">
       <span>📋 薄弱单词</span>
@@ -98,11 +117,13 @@
       <span style="color:#97abcc;font-size:14px;">加载中...</span>
     </div>
   </div>
+
   <div class="footer-note">点击单词可发音 · 答对3次即"记住"</div>
   <div class="project-link">
     📖 项目地址：<a href="https://github.com/Siu659/vocabulary-app/" target="_blank">github.com/Siu659/vocabulary-app</a>
   </div>
 </div>
+
 <script>
 (function(){
   // ===== 核心状态 =====
@@ -118,13 +139,15 @@
   var answered = false;
   var remainingSet = new Set();
   var isDataReady = false;
-  var isSessionActive = false;       // 是否正在训练中（开始后）
+  var isSessionActive = false;
   var timerInterval = null;
   var seconds = 0;
   var timerStarted = false;
 
   // ===== DOM 引用 =====
-  var trainingContent = document.getElementById('trainingContent');
+  var wordArea = document.getElementById('wordArea');
+  var optionsArea = document.getElementById('optionsArea');
+  var actionArea = document.getElementById('actionArea');
   var timerDisplay = document.getElementById('timerDisplay');
   var correctSpan = document.getElementById('correctCount');
   var wrongSpan = document.getElementById('wrongCount');
@@ -134,8 +157,6 @@
   var progressBar = document.getElementById('progressBar');
   var unitLabel = document.getElementById('unitLabel');
   var weakContainer = document.getElementById('weakItemsContainer');
-  var nextBtn = document.getElementById('nextBtn');
-  var resetBtn = document.getElementById('resetBtn');
   var exportBtn = document.getElementById('exportBtn');
   var synth = window.speechSynthesis;
 
@@ -171,11 +192,17 @@
     timerDisplay.textContent = '⏱️ ' + m + ':' + s;
   }
 
+  function getTimeString() {
+    var m = String(Math.floor(seconds / 60)).padStart(2, '0');
+    var s = String(seconds % 60).padStart(2, '0');
+    return m + ':' + s;
+  }
+
   // ===== 加载CSV =====
   function loadCSV() {
     fetch('vocabulary.csv')
       .then(function(response) {
-        if (!response.ok) throw new Error('CSV文件加载失败，状态码: ' + response.status);
+        if (!response.ok) throw new Error('CSV加载失败');
         return response.text();
       })
       .then(function(csvText) {
@@ -187,6 +214,364 @@
         console.error('加载词库出错:', error);
         useFallbackWords();
         isDataReady = true;
+        updateFilteredWords();
+      });
+  }
+
+  function parseCSV(csvText) {
+    var lines = csvText.split('\n');
+    if (lines.length < 2) return;
+    for (var i = 1; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (line === '') continue;
+      var parts = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g);
+      if (parts && parts.length >= 3) {
+        var unit = parts[0].replace(/^"|"$/g, '').trim();
+        var en = parts[1].replace(/^"|"$/g, '').trim();
+        var cn = parts[2].replace(/^"|"$/g, '').trim();
+        if (en && cn) {
+          RAW_WORDS.push({ unit: unit, en: en, cn: cn });
+        }
+      }
+    }
+  }
+
+  function useFallbackWords() {
+    RAW_WORDS = [
+      {unit:"Unit 1", en:"spontaneous", cn:"自发的"},
+      {unit:"Unit 1", en:"prevailing", cn:"普遍的"},
+      {unit:"Unit 2", en:"occupational", cn:"职业的"},
+      {unit:"Unit 2", en:"apparent", cn:"显而易见"}
+    ];
+  }
+
+  // ===== 核心逻辑 =====
+  function updateFilteredWords() {
+    if (!isDataReady) return;
+    if (currentUnit === 'all') {
+      filteredWords = RAW_WORDS.slice();
+    } else {
+      filteredWords = RAW_WORDS.filter(function(w) { return w.unit === currentUnit; });
+    }
+    filteredWords.forEach(function(w) {
+      if (!wordStatus[w.en]) {
+        wordStatus[w.en] = { correct: 0, wrong: 0, en: w.en, cn: w.cn, unit: w.unit };
+      }
+    });
+    remainingSet = new Set();
+    filteredWords.forEach(function(w, idx) {
+      if (wordStatus[w.en].correct < 3) {
+        remainingSet.add(idx);
+      }
+    });
+    unitLabel.textContent = currentUnit === 'all' ? '全部' : currentUnit.replace('Unit ', 'U');
+
+    isSessionActive = false;
+    stopTimer();
+    resetTimer();
+    lastWordEn = null;
+    updateUI();
+    showStartScreen();
+  }
+
+  function updateUI() {
+    var total = filteredWords.length || 1;
+    var done = total - remainingSet.size;
+    var pct = Math.round((done / total) * 100);
+    progressBar.style.width = Math.min(pct, 100) + '%';
+    correctSpan.textContent = correctCount;
+    wrongSpan.textContent = wrongCount;
+    var all = correctCount + wrongCount;
+    rateSpan.textContent = all ? Math.round((correctCount / all) * 100) + '%' : '0%';
+    scoreSpan.textContent = score;
+    remainingSpan.textContent = remainingSet.size;
+    updateWeakList();
+  }
+
+  function updateWeakList() {
+    var list = [];
+    var unitSet = new Set(filteredWords.map(function(w) { return w.en; }));
+    for (var en in wordStatus) {
+      if (!unitSet.has(en)) continue;
+      var st = wordStatus[en];
+      var total = st.correct + st.wrong;
+      if (st.wrong > 0) {
+        var rate = st.wrong / total;
+        list.push({ en: st.en, cn: st.cn, rate: rate, wrong: st.wrong, total: total });
+      }
+    }
+    list.sort(function(a, b) { return b.rate - a.rate; });
+    if (list.length === 0) {
+      weakContainer.innerHTML = '<span style="color:#97abcc;font-size:14px;">🎉 没有错误记录，继续加油！</span>';
+      return;
+    }
+    var html = '';
+    list.forEach(function(item) {
+      var pct = Math.round(item.rate * 100);
+      html += '<span class="weak-tag">' + item.en + ' <span class="badge">' + pct + '%</span></span>';
+    });
+    weakContainer.innerHTML = html;
+  }
+
+  // ===== 开始界面 =====
+  function showStartScreen() {
+    var unitName = currentUnit === 'all' ? '全部词汇' : currentUnit;
+    var total = filteredWords.length;
+    wordArea.innerHTML = '<div class="start-screen"><div class="unit-name">' + unitName + '</div><div class="word-count">📚 词汇总数：' + total + ' 词</div><button class="btn-start" id="btnStart">🚀 开始</button></div>';
+    optionsArea.innerHTML = '';
+    actionArea.innerHTML = '';
+    document.getElementById('btnStart').addEventListener('click', function() {
+      startSession();
+    });
+  }
+
+  // ===== 开始训练 =====
+  function startSession() {
+    if (filteredWords.length === 0) {
+      alert('当前单元没有单词，请切换单元。');
+      return;
+    }
+    isSessionActive = true;
+    startTimer();
+    lastWordEn = null;
+    loadNewWordInternal();
+    renderTraining();
+  }
+
+  // ===== 渲染训练界面 =====
+  function renderTraining() {
+    if (remainingSet.size === 0) {
+      stopTimer();
+      var timeStr = getTimeString();
+      wordArea.innerHTML = '<div class="complete-screen"><div class="unit-name">🎉 全部完成！</div><div class="time-display">⏱️ 用时 ' + timeStr + '</div><div class="stats-summary">正确 ' + correctCount + ' 次 · 错误 ' + wrongCount + ' 次</div><button class="btn-start" id="btnReplay">🔄 再来一次</button></div>';
+      optionsArea.innerHTML = '';
+      actionArea.innerHTML = '';
+      document.getElementById('btnReplay').addEventListener('click', function() {
+        filteredWords.forEach(function(w) {
+          wordStatus[w.en] = { correct: 0, wrong: 0, en: w.en, cn: w.cn, unit: w.unit };
+        });
+        correctCount = 0;
+        wrongCount = 0;
+        score = 0;
+        updateFilteredWords();
+      });
+      return;
+    }
+
+    if (currentWord) {
+      wordArea.innerHTML = '<div class="word-block"><div class="word-en" id="wordDisplay">' + currentWord.en + '</div></div>';
+      document.getElementById('wordDisplay').addEventListener('click', speakWord);
+    }
+
+    // 选项
+    if (currentWord) {
+      generateOptionsInternal(currentWord.cn);
+    }
+
+    // 按钮
+    actionArea.innerHTML = '<div class="action-row"><button class="btn" id="nextBtn">▶ 下一题</button><button class="btn btn-outline" id="resetBtn">↺ 重置</button></div>';
+    document.getElementById('nextBtn').addEventListener('click', handleNext);
+    document.getElementById('resetBtn').addEventListener('click', resetStats);
+
+    updateUI();
+  }
+
+  // ===== 内部：加载新单词 =====
+  function loadNewWordInternal() {
+    if (remainingSet.size === 0) {
+      renderTraining();
+      return;
+    }
+    var remainingIndices = Array.from(remainingSet);
+    var candidateIndices = remainingIndices;
+    if (remainingIndices.length >= 2 && lastWordEn !== null) {
+      candidateIndices = remainingIndices.filter(function(idx) {
+        return filteredWords[idx].en !== lastWordEn;
+      });
+      if (candidateIndices.length === 0) {
+        candidateIndices = remainingIndices;
+      }
+    }
+    var randIdx = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+    var word = filteredWords[randIdx];
+    currentWord = { index: randIdx, en: word.en, cn: word.cn, unit: word.unit };
+    lastWordEn = word.en;
+    answered = false;
+  }
+
+  // ===== 内部：生成选项 =====
+  function generateOptionsInternal(correctCn) {
+    var candidates = [];
+    var cnSet = new Set();
+    cnSet.add(correctCn);
+    candidates.push(correctCn);
+    var pool = filteredWords.map(function(w) { return w.cn; });
+    var shuffled = pool.slice().sort(function() { return Math.random() - 0.5; });
+    for (var i = 0; i < shuffled.length && candidates.length < 4; i++) {
+      if (!cnSet.has(shuffled[i])) {
+        cnSet.add(shuffled[i]);
+        candidates.push(shuffled[i]);
+      }
+    }
+    while (candidates.length < 4) {
+      var fallback = ['正确选项', '干扰项A', '干扰项B', '干扰项C'];
+      if (!cnSet.has(fallback[candidates.length])) {
+        candidates.push(fallback[candidates.length]);
+      }
+    }
+    var shuffledOptions = candidates.sort(function() { return Math.random() - 0.5; });
+    var html = '<div class="options-grid">';
+    for (var i = 0; i < shuffledOptions.length; i++) {
+      html += '<div class="option" data-cn="' + shuffledOptions[i] + '">' + shuffledOptions[i] + '</div>';
+    }
+    html += '</div>';
+    optionsArea.innerHTML = html;
+    var opts = optionsArea.querySelectorAll('.option');
+    for (var j = 0; j < opts.length; j++) {
+      opts[j].addEventListener('click', function(e) {
+        if (answered) return;
+        var selected = e.target.getAttribute('data-cn');
+        handleAnswerInternal(selected);
+      });
+    }
+  }
+
+  // ===== 内部：处理答案 =====
+  function handleAnswerInternal(selected) {
+    answered = true;
+    var st = wordStatus[currentWord.en];
+    var opts = optionsArea.querySelectorAll('.option');
+    var isCorrect = (selected === currentWord.cn);
+    if (isCorrect) {
+      st.correct++;
+      correctCount++;
+      score += 10;
+      if (st.correct >= 3) {
+        remainingSet.delete(currentWord.index);
+      }
+    } else {
+      st.wrong++;
+      wrongCount++;
+      score = Math.max(0, score - 5);
+    }
+    for (var i = 0; i < opts.length; i++) {
+      opts[i].classList.add('disabled');
+      if (opts[i].getAttribute('data-cn') === currentWord.cn) {
+        opts[i].classList.add('correct');
+      } else if (opts[i].getAttribute('data-cn') === selected && !isCorrect) {
+        opts[i].classList.add('wrong');
+      }
+    }
+    updateUI();
+
+    if (remainingSet.size === 0) {
+      setTimeout(function() {
+        stopTimer();
+        renderTraining();
+      }, 600);
+    }
+  }
+
+  // ===== 下一题 =====
+  function handleNext() {
+    if (!isSessionActive) return;
+    if (!answered && currentWord) {
+      var st = wordStatus[currentWord.en];
+      if (st && st.correct < 3) {
+        if (confirm('当前题目未作答，确定跳过吗？')) {
+          loadNewWordInternal();
+          renderTraining();
+        }
+      } else {
+        loadNewWordInternal();
+        renderTraining();
+      }
+    } else {
+      loadNewWordInternal();
+      renderTraining();
+    }
+  }
+
+  // ===== 重置 =====
+  function resetStats() {
+    if (confirm('重置所有进度？这将清除所有统计数据。')) {
+      correctCount = 0;
+      wrongCount = 0;
+      score = 0;
+      wordStatus = {};
+      lastWordEn = null;
+      stopTimer();
+      resetTimer();
+      updateFilteredWords();
+    }
+  }
+
+  // ===== TTS =====
+  function speakWord() {
+    if (!currentWord) return;
+    if (synth.speaking) synth.cancel();
+    var utterance = new SpeechSynthesisUtterance(currentWord.en);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    synth.speak(utterance);
+  }
+
+  // ===== 导出薄弱表 =====
+  function exportWeakList() {
+    var list = [];
+    var unitSet = new Set(filteredWords.map(function(w) { return w.en; }));
+    for (var en in wordStatus) {
+      if (!unitSet.has(en)) continue;
+      var st = wordStatus[en];
+      var total = st.correct + st.wrong;
+      if (st.wrong > 0) {
+        var rate = st.wrong / total;
+        list.push({ en: st.en, cn: st.cn, correct: st.correct, wrong: st.wrong, rate: rate });
+      }
+    }
+    if (list.length === 0) {
+      alert('🎉 没有错误记录，无需导出！');
+      return;
+    }
+    list.sort(function(a, b) { return b.rate - a.rate; });
+    var header = '单词,中文,正确次数,错误次数,错误率\n';
+    var body = '';
+    list.forEach(function(item) {
+      var pct = Math.round(item.rate * 100);
+      body += item.en + ',' + item.cn + ',' + item.correct + ',' + item.wrong + ',' + pct + '%\n';
+    });
+    var blob = new Blob([header + body], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '薄弱单词表.csv';
+    link.click();
+  }
+
+  // ===== 切换单元 =====
+  function switchUnit(unit) {
+    currentUnit = unit;
+    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-unit') === unit);
+    });
+    stopTimer();
+    resetTimer();
+    updateFilteredWords();
+  }
+
+  // ===== 事件绑定 =====
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      switchUnit(this.getAttribute('data-unit'));
+    });
+  });
+  exportBtn.addEventListener('click', exportWeakList);
+
+  // ===== 启动 =====
+  loadCSV();
+})();
+</script>
+</body>
+</html>eady = true;
         updateFilteredWords();
       });
   }
