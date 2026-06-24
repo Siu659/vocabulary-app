@@ -91,7 +91,7 @@
   <div class="card weak-list" id="weakListCard">
     <div class="weak-title">
       <span>📋 薄弱单词</span>
-      <span style="font-weight:400;font-size:13px;color:#6783b0;">错误率越高越靠前</span>
+      <span style="font-weight:400;font-size:13px;color:#6783b0;">错误率越高越靠前 · 永久留存</span>
     </div>
     <div class="weak-items" id="weakItemsContainer">
       <span style="color:#97abcc;font-size:14px;">加载中...</span>
@@ -102,11 +102,12 @@
 <script>
 (function(){
   // ===== 核心状态 =====
-  var RAW_WORDS = [];             // 将从CSV加载
+  var RAW_WORDS = [];
   var currentUnit = 'all';
   var filteredWords = [];
-  var wordStatus = {};            // key: en, value: { correct, wrong, en, cn, unit }
+  var wordStatus = {};
   var currentWord = null;
+  var lastWordEn = null;
   var correctCount = 0;
   var wrongCount = 0;
   var score = 0;
@@ -146,7 +147,6 @@
         console.error('加载词库出错:', error);
         wordDisplay.textContent = '⚠️ 词库加载失败';
         weakContainer.innerHTML = '<span style="color:#d14c4c;">请检查网络或刷新重试</span>';
-        // 使用硬编码的备用词库（极简版，仅用于演示）
         useFallbackWords();
         isDataReady = true;
         updateFilteredWords();
@@ -156,11 +156,9 @@
   function parseCSV(csvText) {
     var lines = csvText.split('\n');
     if (lines.length < 2) return;
-    // 跳过表头 (lines[0])
     for (var i = 1; i < lines.length; i++) {
       var line = lines[i].trim();
       if (line === '') continue;
-      // 简单解析：按逗号分割，并处理可能的引号
       var parts = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g);
       if (parts && parts.length >= 3) {
         var unit = parts[0].replace(/^"|"$/g, '').trim();
@@ -174,7 +172,6 @@
     console.log('✅ 从CSV加载了 ' + RAW_WORDS.length + ' 个单词');
   }
 
-  // 备用词库（当CSV加载失败时使用）
   function useFallbackWords() {
     RAW_WORDS = [
       {unit:"Unit 1", en:"spontaneous", cn:"自发的"},
@@ -194,13 +191,11 @@
     } else {
       filteredWords = RAW_WORDS.filter(function(w) { return w.unit === currentUnit; });
     }
-    // 初始化 wordStatus（只存 en 为 key）
     filteredWords.forEach(function(w) {
       if (!wordStatus[w.en]) {
         wordStatus[w.en] = { correct: 0, wrong: 0, en: w.en, cn: w.cn, unit: w.unit };
       }
     });
-    // 重建 remainingSet
     remainingSet = new Set();
     filteredWords.forEach(function(w, idx) {
       if (wordStatus[w.en].correct < 3) {
@@ -208,6 +203,7 @@
       }
     });
     unitLabel.textContent = currentUnit === 'all' ? '全部' : currentUnit.replace('Unit ', 'U');
+    lastWordEn = null;
     updateUI();
     if (filteredWords.length > 0 && remainingSet.size > 0) {
       loadNewWord();
@@ -235,6 +231,7 @@
     updateWeakList();
   }
 
+  // ===== 薄弱列表：永久保留所有有错误记录的词 =====
   function updateWeakList() {
     var list = [];
     var unitSet = new Set(filteredWords.map(function(w) { return w.en; }));
@@ -242,36 +239,50 @@
       if (!unitSet.has(en)) continue;
       var st = wordStatus[en];
       var total = st.correct + st.wrong;
-      if (total > 0 && st.correct < 3) {
+      // 只要有过错误记录（wrong > 0）就显示，永久留存
+      if (st.wrong > 0) {
         var rate = st.wrong / total;
         list.push({ en: st.en, cn: st.cn, rate: rate, wrong: st.wrong, total: total });
       }
     }
     list.sort(function(a, b) { return b.rate - a.rate; });
     if (list.length === 0) {
-      weakContainer.innerHTML = '<span style="color:#97abcc;font-size:14px;">🎉 暂无薄弱词，继续加油！</span>';
+      weakContainer.innerHTML = '<span style="color:#97abcc;font-size:14px;">🎉 没有错误记录，继续加油！</span>';
       return;
     }
     var html = '';
     list.forEach(function(item) {
       var pct = Math.round(item.rate * 100);
+      var status = item.total > 0 && item.wrong === 0 ? '✅' : '';
       html += '<span class="weak-tag">' + item.en + ' <span class="badge">' + pct + '%</span></span>';
     });
     weakContainer.innerHTML = html;
   }
 
+  // ===== 避免连续出现 =====
   function loadNewWord() {
     if (!isDataReady) return;
     if (remainingSet.size === 0) {
       wordDisplay.textContent = '🎉 全部记住！';
       optionsContainer.innerHTML = '';
       answered = true;
+      lastWordEn = null;
       return;
     }
     var remainingIndices = Array.from(remainingSet);
-    var randIdx = remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
+    var candidateIndices = remainingIndices;
+    if (remainingIndices.length >= 2 && lastWordEn !== null) {
+      candidateIndices = remainingIndices.filter(function(idx) {
+        return filteredWords[idx].en !== lastWordEn;
+      });
+      if (candidateIndices.length === 0) {
+        candidateIndices = remainingIndices;
+      }
+    }
+    var randIdx = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
     var word = filteredWords[randIdx];
     currentWord = { index: randIdx, en: word.en, cn: word.cn, unit: word.unit };
+    lastWordEn = word.en;
     wordDisplay.textContent = word.en;
     generateOptions(word.cn);
     answered = false;
@@ -347,6 +358,7 @@
       wrongCount = 0;
       score = 0;
       wordStatus = {};
+      lastWordEn = null;
       updateFilteredWords();
     }
   }
@@ -361,30 +373,23 @@
     synth.speak(utterance);
   }
 
-  // ===== 导出薄弱表（修复版）=====
+  // ===== 导出薄弱表：永久保留所有有错误记录的词 =====
   function exportWeakList() {
     var list = [];
-    // 统计当前单元的所有单词（包括已记住的）
     var unitSet = new Set(filteredWords.map(function(w) { return w.en; }));
     for (var en in wordStatus) {
       if (!unitSet.has(en)) continue;
       var st = wordStatus[en];
       var total = st.correct + st.wrong;
-      // 只导出有学习记录且正确次数<3的单词；如果所有词都记住了，则导出所有词（此时正确率100%）
-      if (total > 0 && st.correct < 3) {
+      if (st.wrong > 0) {
         var rate = st.wrong / total;
         list.push({ en: st.en, cn: st.cn, correct: st.correct, wrong: st.wrong, rate: rate });
-      } else if (total > 0 && st.correct >= 3 && remainingSet.size === 0) {
-        // 全部记住时，导出所有词，错误率为0
-        list.push({ en: st.en, cn: st.cn, correct: st.correct, wrong: st.wrong, rate: 0 });
       }
     }
-    // 如果 list 为空（例如从未练习过），提示并返回
     if (list.length === 0) {
-      alert('暂无学习记录，请先进行训练。');
+      alert('🎉 没有错误记录，无需导出！');
       return;
     }
-    // 按错误率降序排列
     list.sort(function(a, b) { return b.rate - a.rate; });
     var header = '单词,中文,正确次数,错误次数,错误率\n';
     var body = '';
@@ -405,6 +410,7 @@
     document.querySelectorAll('.filter-btn').forEach(function(btn) {
       btn.classList.toggle('active', btn.getAttribute('data-unit') === unit);
     });
+    lastWordEn = null;
     updateFilteredWords();
   }
 
