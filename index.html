@@ -373,7 +373,7 @@
     synth.speak(utterance);
   }
 
-  // ===== 导出薄弱表：永久保留所有有错误记录的词 =====
+  // ===== 导出薄弱表 =====
   function exportWeakList() {
     var list = [];
     var unitSet = new Set(filteredWords.map(function(w) { return w.en; }));
