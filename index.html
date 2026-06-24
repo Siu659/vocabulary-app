@@ -65,7 +65,7 @@
   </div>
   <div class="card">
     <div class="word-block">
-      <div class="word-en" id="wordDisplay">点击开始</div>
+      <div class="word-en" id="wordDisplay">加载词库中...</div>
     </div>
     <div class="options-grid" id="optionsContainer"></div>
     <div class="action-row">
@@ -94,429 +94,341 @@
       <span style="font-weight:400;font-size:13px;color:#6783b0;">错误率越高越靠前</span>
     </div>
     <div class="weak-items" id="weakItemsContainer">
-      <span style="color:#97abcc;font-size:14px;">暂无薄弱词，继续练习吧</span>
+      <span style="color:#97abcc;font-size:14px;">加载中...</span>
     </div>
   </div>
   <div class="footer-note">点击单词可发音 · 答对3次即"记住"</div>
 </div>
 <script>
 (function(){
-var RAW_WORDS=[
-{unit:"Unit 1 Love and Romance",en:"spontaneous",cn:"自发的，情不自禁的"},
-{unit:"Unit 1 Love and Romance",en:"prevailing",cn:"普遍的，盛行的"},
-{unit:"Unit 1 Love and Romance",en:"swoon",cn:"痴迷，为……神魂颠倒"},
-{unit:"Unit 1 Love and Romance",en:"dynastic",cn:"王朝的"},
-{unit:"Unit 1 Love and Romance",en:"foible",cn:"怪癖，小缺点"},
-{unit:"Unit 1 Love and Romance",en:"crutially",cn:"至关重要地"},
-{unit:"Unit 1 Love and Romance",en:"aesthetic",cn:"艺术的，审美的"},
-{unit:"Unit 1 Love and Romance",en:"lay ... at the door of",cn:"归咎于"},
-{unit:"Unit 1 Love and Romance",en:"impediment",cn:"阻碍，障碍"},
-{unit:"Unit 1 Love and Romance",en:"impassioned",cn:"充满激情的，热烈的"},
-{unit:"Unit 1 Love and Romance",en:"realism",cn:"现实性，逼真"},
-{unit:"Unit 1 Love and Romance",en:"narrative",cn:"叙述，叙事"},
-{unit:"Unit 1 Love and Romance",en:"unwittingly",cn:"无意地"},
-{unit:"Unit 1 Love and Romance",en:"devilish",cn:"魔鬼般的"},
-{unit:"Unit 1 Love and Romance",en:"cursed",cn:"被诅咒的"},
-{unit:"Unit 1 Love and Romance",en:"convent",cn:"修道院；修女学校"},
-{unit:"Unit 1 Love and Romance",en:"heady",cn:"令人陶醉的"},
-{unit:"Unit 1 Love and Romance",en:"transcendent",cn:"卓越的，杰出的"},
-{unit:"Unit 1 Love and Romance",en:"humdrum",cn:"单调的，乏味的"},
-{unit:"Unit 1 Love and Romance",en:"domestic chores",cn:"家务活"},
-{unit:"Unit 1 Love and Romance",en:"linen cupboard",cn:"日用织品橱柜"},
-{unit:"Unit 1 Love and Romance",en:"clumsy",cn:"笨拙的"},
-{unit:"Unit 1 Love and Romance",en:"embark",cn:"开始，着手"},
-{unit:"Unit 1 Love and Romance",en:"louche",cn:"名声狼藉的"},
-{unit:"Unit 1 Love and Romance",en:"squarely",cn:"直截了当的"},
-{unit:"Unit 1 Love and Romance",en:"wry",cn:"讽刺的；揶揄的"},
-{unit:"Unit 1 Love and Romance",en:"delude",cn:"欺骗"},
-{unit:"Unit 1 Love and Romance",en:"rationable",cn:"根本原因，逻辑依据"},
-{unit:"Unit 1 Love and Romance",en:"banal",cn:"平庸的，乏味的"},
-{unit:"Unit 2 Fasion",en:"occupational",cn:"职业的"},
-{unit:"Unit 2 Fasion",en:"apparent",cn:"显而易见"},
-{unit:"Unit 2 Fasion",en:"compare with",cn:"与……相比"},
-{unit:"Unit 2 Fasion",en:"trend",cn:"趋势"},
-{unit:"Unit 2 Fasion",en:"identify",cn:"辨认"},
-{unit:"Unit 2 Fasion",en:"manage with",cn:"用……对付过去"},
-{unit:"Unit 2 Fasion",en:"hang over",cn:"搭在……之上"},
-{unit:"Unit 2 Fasion",en:"agora",cn:"（古希腊）市场"},
-{unit:"Unit 2 Fasion",en:"arrogance",cn:"自负"},
-{unit:"Unit 2 Fasion",en:"be entitled to",cn:"有……的资格"},
-{unit:"Unit 2 Fasion",en:"luxury",cn:"奢侈，奢侈品"},
-{unit:"Unit 2 Fasion",en:"inform about",cn:"通知，告知"},
-{unit:"Unit 2 Fasion",en:"dominate",cn:"支配，占优势"},
-{unit:"Unit 2 Fasion",en:"in a heartbeat",cn:"立即"},
-{unit:"Unit 2 Fasion",en:"authentic",cn:"真实的，可靠的"},
-{unit:"Unit 2 Fasion",en:"inherent",cn:"固有的"},
-{unit:"Unit 2 Fasion",en:"show off",cn:"炫耀"},
-{unit:"Unit 2 Fasion",en:"stand out",cn:"突出"},
-{unit:"Unit 2 Fasion",en:"in debt to",cn:"欠债"},
-{unit:"Unit 2 Fasion",en:"corset",cn:"紧身内衣"},
-{unit:"Unit 2 Fasion",en:"bourgeoisie",cn:"资产阶级，中产阶级"},
-{unit:"Unit 2 Fasion",en:"Rococo",cn:"洛可可风格"},
-{unit:"Unit 2 Fasion",en:"pastel",cn:"清淡的，柔和的"},
-{unit:"Unit 2 Fasion",en:"hallmark",cn:"标志"},
-{unit:"Unit 2 Fasion",en:"Haute Couture",cn:"高级定制时装"},
-{unit:"Unit 2 Fasion",en:"boutique",cn:"精品"},
-{unit:"Unit 2 Fasion",en:"prosper",cn:"繁盛"},
-{unit:"Unit 2 Fasion",en:"break out",cn:"爆发"},
-{unit:"Unit 2 Fasion",en:"indispensable",cn:"不可缺少的"},
-{unit:"Unit 2 Fasion",en:"cliché",cn:"陈词滥调"},
-{unit:"Unit 2 Fasion",en:"turn/stand on its head",cn:"倒立，完全相反"},
-{unit:"Unit 2 Fasion",en:"remind of",cn:"使……想起"},
-{unit:"Unit 2 Fasion",en:"obsolete",cn:"过时的"},
-{unit:"Unit 2 Fasion",en:"incorporate",cn:"吸收，合并"},
-{unit:"Unit 3 Jobs & Careers",en:"venture",cn:"企业"},
-{unit:"Unit 3 Jobs & Careers",en:"delve into",cn:"探究"},
-{unit:"Unit 3 Jobs & Careers",en:"eclectic",cn:"广泛的"},
-{unit:"Unit 3 Jobs & Careers",en:"stall",cn:"摊位"},
-{unit:"Unit 3 Jobs & Careers",en:"cuisine",cn:"美食"},
-{unit:"Unit 3 Jobs & Careers",en:"starter",cn:"创业者"},
-{unit:"Unit 3 Jobs & Careers",en:"hit the scene",cn:"登场"},
-{unit:"Unit 3 Jobs & Careers",en:"rut",cn:"车辙"},
-{unit:"Unit 3 Jobs & Careers",en:"stuck in a rut",cn:"刻板乏味"},
-{unit:"Unit 3 Jobs & Careers",en:"regular",cn:"常备军"},
-{unit:"Unit 3 Jobs & Careers",en:"be frustrated with",cn:"对……感到沮丧"},
-{unit:"Unit 3 Jobs & Careers",en:"navigate",cn:"找到正确的方法（对付困难的情况）"},
-{unit:"Unit 3 Jobs & Careers",en:"clutter",cn:"杂乱"},
-{unit:"Unit 3 Jobs & Careers",en:"spot",cn:"发现"},
-{unit:"Unit 3 Jobs & Careers",en:"directory listing",cn:"目录列表"},
-{unit:"Unit 3 Jobs & Careers",en:"foray",cn:"尝试"},
-{unit:"Unit 3 Jobs & Careers",en:"array",cn:"一批"},
-{unit:"Unit 3 Jobs & Careers",en:"take off",cn:"流行"},
-{unit:"Unit 3 Jobs & Careers",en:"renovate",cn:"整修"},
-{unit:"Unit 3 Jobs & Careers",en:"cosy",cn:"温馨的"},
-{unit:"Unit 3 Jobs & Careers",en:"ambience",cn:"气氛"},
-{unit:"Unit 3 Jobs & Careers",en:"join force with",cn:"联手"},
-{unit:"Unit 3 Jobs & Careers",en:"acquire",cn:"收购"},
-{unit:"Unit 3 Jobs & Careers",en:"affordable",cn:"买得起"},
-{unit:"Unit 3 Jobs & Careers",en:"hawker fare",cn:"街头小吃"},
-{unit:"Unit 3 Jobs & Careers",en:"twist",cn:"结合"},
-{unit:"Unit 3 Jobs & Careers",en:"flow in",cn:"汇入"},
-{unit:"Unit 3 Jobs & Careers",en:"take a leap of faith",cn:"放手一搏"},
-{unit:"Unit 3 Jobs & Careers",en:"naysayer",cn:"反对者"},
-{unit:"Unit 3 Jobs & Careers",en:"junkie",cn:"对……上瘾的人"},
-{unit:"Unit 3 Jobs & Careers",en:"pay heed to",cn:"关注"},
-{unit:"Unit 3 Jobs & Careers",en:"heckle",cn:"责问"},
-{unit:"Unit 3 Jobs & Careers",en:"fledgling",cn:"新建的"},
-{unit:"Unit 3 Jobs & Careers",en:"established",cn:"致命的"},
-{unit:"Unit 3 Jobs & Careers",en:"hold back",cn:"犹豫"},
-{unit:"Unit 3 Jobs & Careers",en:"robust",cn:"有力的"},
-{unit:"Unit 3 Jobs & Careers",en:"uncharted",cn:"未知的"},
-{unit:"Unit 3 Jobs & Careers",en:"awry",cn:"错误地"},
-{unit:"Unit 3 Jobs & Careers",en:"venture into",cn:"冒险进入"},
-{unit:"Unit 3 Jobs & Careers",en:"sell off",cn:"低价售出"},
-{unit:"Unit 3 Jobs & Careers",en:"bruising",cn:"惨痛的"},
-{unit:"Unit 3 Jobs & Careers",en:"cut out for",cn:"适合于"},
-{unit:"Unit 3 Jobs & Careers",en:"fickle",cn:"变化无常的"},
-{unit:"Unit 3 Jobs & Careers",en:"stumble",cn:"失足"},
-{unit:"Unit 3 Jobs & Careers",en:"invaluable",cn:"珍贵的"},
-{unit:"Unit 3 Jobs & Careers",en:"manic",cn:"疯狂的"},
-{unit:"Unit 3 Jobs & Careers",en:"flip",cn:"打开"},
-{unit:"Unit 3 Jobs & Careers",en:"field",cn:"答复"},
-{unit:"Unit 3 Jobs & Careers",en:"save on",cn:"节省"},
-{unit:"Unit 3 Jobs & Careers",en:"grind",cn:"苦差事"},
-{unit:"Unit 3 Jobs & Careers",en:"juggle",cn:"兼顾"},
-{unit:"Unit 3 Jobs & Careers",en:"entrepreneur",cn:"企业家"},
-{unit:"Unit 3 Jobs & Careers",en:"reap",cn:"收获"},
-{unit:"Unit 3 Jobs & Careers",en:"vision",cn:"设想"},
-{unit:"Unit 3 Jobs & Careers",en:"persevere",cn:"坚持"},
-{unit:"Unit 4 Leadership",en:"vex",cn:"使烦恼；使恼怒"},
-{unit:"Unit 4 Leadership",en:"consultant",cn:"顾问"},
-{unit:"Unit 4 Leadership",en:"seniority",cn:"年资，资历；年长"},
-{unit:"Unit 4 Leadership",en:"hierarchy",cn:"层级；等级制度"},
-{unit:"Unit 4 Leadership",en:"executive",cn:"主管，经理"},
-{unit:"Unit 4 Leadership",en:"guarantee",cn:"保证，担保"},
-{unit:"Unit 4 Leadership",en:"worship",cn:"崇拜，景仰"},
-{unit:"Unit 4 Leadership",en:"personal attribute",cn:"个人属性；个人特质"},
-{unit:"Unit 4 Leadership",en:"domineering",cn:"跋扈的，专横的"},
-{unit:"Unit 4 Leadership",en:"charismatic",cn:"魅力超凡的，有感召力的"},
-{unit:"Unit 4 Leadership",en:"extroverted",cn:"性格外向的"},
-{unit:"Unit 4 Leadership",en:"synonymous",cn:"同义的；同义词的；同义突变的"},
-{unit:"Unit 4 Leadership",en:"downline",cn:"沿铁路线；下线"},
-{unit:"Unit 4 Leadership",en:"P&L responsibility",cn:"profit and loss responsibility 损益责任"},
-{unit:"Unit 4 Leadership",en:"coordinate",cn:"调节，配合；使动作协调"},
-{unit:"Unit 4 Leadership",en:"tautology",cn:"同义反复；无谓的重复"},
-{unit:"Unit 4 Leadership",en:"utter",cn:"说出；发出，表达"},
-{unit:"Unit 4 Leadership",en:"routine",cn:"常规的，例行的"},
-{unit:"Unit 4 Leadership",en:"subordinate",cn:"部属，下属，下级；从属，次要"},
-{unit:"Unit 4 Leadership",en:"by default",cn:"默认情况下"},
-{unit:"Unit 4 Leadership",en:"capacity",cn:"能力；容量"},
-{unit:"Unit 4 Leadership",en:"vision",cn:"视力；美景；眼力；幻想；想象力"},
-{unit:"Unit 4 Leadership",en:"empower",cn:"授权，允许；使能够"},
-{unit:"Unit 4 Leadership",en:"rioting",cn:"暴乱"},
-{unit:"Unit 4 Leadership",en:"hooligan",cn:"阿飞；小流氓"},
-{unit:"Unit 4 Leadership",en:"misalign",cn:"不重合，偏位"},
-{unit:"Unit 4 Leadership",en:"minimalism",cn:"极简派艺术；极简主义"},
-{unit:"Unit 4 Leadership",en:"reduction",cn:"减少；下降；缩小"},
-{unit:"Unit 4 Leadership",en:"victim",cn:"受害人，牺牲品，牺牲者"},
-{unit:"Unit 4 Leadership",en:"omit",cn:"省略；遗漏"},
-{unit:"Unit 4 Leadership",en:"inclusion",cn:"包含；内含物"},
-{unit:"Unit 4 Leadership",en:"discretionary",cn:"任意的；酌情决定的"},
-{unit:"Unit 5 Technology and Life",en:"gesture",cn:"表示"},
-{unit:"Unit 5 Technology and Life",en:"affection",cn:"喜欢"},
-{unit:"Unit 5 Technology and Life",en:"interact",cn:"互动"},
-{unit:"Unit 5 Technology and Life",en:"blind date",cn:"经介绍的第一次约会"},
-{unit:"Unit 5 Technology and Life",en:"stamp",cn:"标出"},
-{unit:"Unit 5 Technology and Life",en:"inscription",cn:"题词"},
-{unit:"Unit 5 Technology and Life",en:"render",cn:"致使"},
-{unit:"Unit 5 Technology and Life",en:"for the benefit of",cn:"为了……的利益"},
-{unit:"Unit 5 Technology and Life",en:"companion",cn:"同伴"},
-{unit:"Unit 5 Technology and Life",en:"evangelize",cn:"向……传播"},
-{unit:"Unit 5 Technology and Life",en:"self-imposed",cn:"自我强加的"},
-{unit:"Unit 5 Technology and Life",en:"banish",cn:"清除，废除"},
-{unit:"Unit 5 Technology and Life",en:"stumble upon",cn:"偶然遇到"},
-{unit:"Unit 5 Technology and Life",en:"avatar",cn:"（网络）头像，化身"},
-{unit:"Unit 5 Technology and Life",en:"interface",cn:"界面"},
-{unit:"Unit 5 Technology and Life",en:"risky",cn:"危险的"},
-{unit:"Unit 5 Technology and Life",en:"documentary",cn:"纪录片"},
-{unit:"Unit 5 Technology and Life",en:"illusion",cn:"幻想"},
-{unit:"Unit 5 Technology and Life",en:"intimacy",cn:"亲密"},
-{unit:"Unit 5 Technology and Life",en:"negotiation",cn:"谈判"},
-{unit:"Unit 5 Technology and Life",en:"relegation",cn:"移交，驱逐"},
-{unit:"Unit 5 Technology and Life",en:"chronic",cn:"长期的"},
-{unit:"Unit 5 Technology and Life",en:"compulsively",cn:"无法控制地；有强迫症地"},
-{unit:"Unit 5 Technology and Life",en:"invest in",cn:"投资"},
-{unit:"Unit 5 Technology and Life",en:"designate",cn:"把……定为"},
-{unit:"Unit 5 Technology and Life",en:"snobby",cn:"势力的"},
-{unit:"Unit 5 Technology and Life",en:"furtively",cn:"偷偷地"},
-{unit:"Unit 5 Technology and Life",en:"zinger",cn:"风趣的话"},
-{unit:"Unit 6 Information and Society",en:"self-evident",cn:"不言自明的"},
-{unit:"Unit 6 Information and Society",en:"hierarchy",cn:"等级制度"},
-{unit:"Unit 6 Information and Society",en:"nothing but",cn:"仅仅"},
-{unit:"Unit 6 Information and Society",en:"reproduce",cn:"繁殖"},
-{unit:"Unit 6 Information and Society",en:"overlap",cn:"重叠，交叉"},
-{unit:"Unit 6 Information and Society",en:"utopia",cn:"乌托邦，理想国"},
-{unit:"Unit 6 Information and Society",en:"rear its head",cn:"（不愉快的东西）出现"},
-{unit:"Unit 6 Information and Society",en:"adaptive",cn:"有适应能力的"},
-{unit:"Unit 6 Information and Society",en:"embed",cn:"嵌入"},
-{unit:"Unit 6 Information and Society",en:"primate",cn:"灵长类动物"},
-{unit:"Unit 6 Information and Society",en:"split up into",cn:"分成"},
-{unit:"Unit 6 Information and Society",en:"isolate from",cn:"使与……隔离"},
-{unit:"Unit 6 Information and Society",en:"interweave",cn:"（使）交织"},
-{unit:"Unit 6 Information and Society",en:"proximity",cn:"接近"},
-{unit:"Unit 6 Information and Society",en:"facilitate",cn:"促进"},
-{unit:"Unit 6 Information and Society",en:"dispersal",cn:"传播"},
-{unit:"Unit 6 Information and Society",en:"coordinate",cn:"（使）协调"},
-{unit:"Unit 6 Information and Society",en:"equivalent",cn:"相等的"},
-{unit:"Unit 6 Information and Society",en:"optimal",cn:"最佳的"},
-{unit:"Unit 6 Information and Society",en:"collective",cn:"集体的"},
-{unit:"Unit 6 Information and Society",en:"delude",cn:"哄骗"},
-{unit:"Unit 6 Information and Society",en:"arbitrary",cn:"随意的"},
-{unit:"Unit 6 Information and Society",en:"authoritative",cn:"有权威的"},
-{unit:"Unit 6 Information and Society",en:"conversely",cn:"相反地，反过来"},
-{unit:"Unit 6 Information and Society",en:"skepticism",cn:"怀疑论"},
-{unit:"Unit 6 Information and Society",en:"egalitarian",cn:"平等的"}
-];
-var currentUnit='all';
-var filteredWords=[];
-var wordStatus={};
-var currentWord=null;
-var correctCount=0;
-var wrongCount=0;
-var score=0;
-var answered=false;
-var remainingSet=new Set();
-var wordDisplay=document.getElementById('wordDisplay');
-var optionsContainer=document.getElementById('optionsContainer');
-var correctSpan=document.getElementById('correctCount');
-var wrongSpan=document.getElementById('wrongCount');
-var rateSpan=document.getElementById('rateDisplay');
-var scoreSpan=document.getElementById('scoreDisplay');
-var remainingSpan=document.getElementById('remainingDisplay');
-var progressBar=document.getElementById('progressBar');
-var unitLabel=document.getElementById('unitLabel');
-var weakContainer=document.getElementById('weakItemsContainer');
-var nextBtn=document.getElementById('nextBtn');
-var resetBtn=document.getElementById('resetBtn');
-var exportBtn=document.getElementById('exportBtn');
-var synth=window.speechSynthesis;
-function updateFilteredWords(){
-if(currentUnit==='all'){filteredWords=RAW_WORDS.slice();}
-else{filteredWords=RAW_WORDS.filter(function(w){return w.unit===currentUnit;});}
-filteredWords.forEach(function(w,idx){var key=w.en+'_'+w.unit;if(!wordStatus[key]){wordStatus[key]={correct:0,wrong:0,en:w.en,cn:w.cn,unit:w.unit};}});
-remainingSet=new Set();
-filteredWords.forEach(function(w,idx){var key=w.en+'_'+w.unit;if(wordStatus[key].correct<3){remainingSet.add(idx);}});
-unitLabel.textContent=currentUnit==='all'?'全部':currentUnit.replace('Unit ','U');
-updateUI();
-if(filteredWords.length>0){loadNewWord();}else{wordDisplay.textContent='无单词';optionsContainer.innerHTML='';}
-}
-function updateUI(){
-var total=filteredWords.length||1;
-var done=total-remainingSet.size;
-var pct=Math.round((done/total)*100);
-progressBar.style.width=Math.min(pct,100)+'%';
-correctSpan.textContent=correctCount;
-wrongSpan.textContent=wrongCount;
-var all=correctCount+wrongCount;
-rateSpan.textContent=all?Math.round((correctCount/all)*100)+'%':'0%';
-scoreSpan.textContent=score;
-remainingSpan.textContent=remainingSet.size;
-updateWeakList();
-}
-function updateWeakList(){
-var list=[];
-for(var key in wordStatus){
-var st=wordStatus[key];
-var total=st.correct+st.wrong;
-if(total>0&&st.correct<3){
-var rate=st.wrong/total;
-list.push({key:key,en:st.en,cn:st.cn,rate:rate,wrong:st.wrong,total:total});
-}
-}
-list.sort(function(a,b){return b.rate-a.rate;});
-if(list.length===0){weakContainer.innerHTML='<span style="color:#97abcc;font-size:14px;">暂无薄弱词，继续练习吧</span>';return;}
-var html='';
-list.forEach(function(item){
-var pct=Math.round(item.rate*100);
-html+='<span class="weak-tag">'+item.en+' <span class="badge">'+pct+'%</span></span>';
-});
-weakContainer.innerHTML=html;
-}
-function loadNewWord(){
-if(remainingSet.size===0){
-wordDisplay.textContent='🎉 全部记住！';
-optionsContainer.innerHTML='';
-answered=true;
-return;
-}
-var remainingIndices=Array.from(remainingSet);
-var randIdx=remainingIndices[Math.floor(Math.random()*remainingIndices.length)];
-var word=filteredWords[randIdx];
-currentWord={index:randIdx,en:word.en,cn:word.cn,unit:word.unit};
-wordDisplay.textContent=word.en;
-generateOptions(word.cn);
-answered=false;
-}
-function generateOptions(correctCn){
-var candidates=[];
-var cnSet=new Set();
-cnSet.add(correctCn);
-candidates.push(correctCn);
-var pool=filteredWords.map(function(w){return w.cn;});
-var shuffled=pool.slice().sort(function(){return Math.random()-0.5;});
-for(var i=0;i<shuffled.length&&candidates.length<4;i++){
-if(!cnSet.has(shuffled[i])){
-cnSet.add(shuffled[i]);
-candidates.push(shuffled[i]);
-}
-}
-while(candidates.length<4){
-var fallback=['正确选项','干扰项A','干扰项B','干扰项C'];
-if(!cnSet.has(fallback[candidates.length])){
-candidates.push(fallback[candidates.length]);
-}
-}
-var shuffledOptions=candidates.sort(function(){return Math.random()-0.5;});
-var html='';
-for(var i=0;i<shuffledOptions.length;i++){
-html+='<div class="option" data-cn="'+shuffledOptions[i]+'">'+shuffledOptions[i]+'</div>';
-}
-optionsContainer.innerHTML=html;
-var opts=document.querySelectorAll('.option');
-for(var j=0;j<opts.length;j++){
-opts[j].addEventListener('click',function(e){
-if(answered)return;
-var selected=e.target.getAttribute('data-cn');
-handleAnswer(selected);
-});
-}
-}
-function handleAnswer(selected){
-answered=true;
-var key=currentWord.en+'_'+currentWord.unit;
-var st=wordStatus[key];
-var opts=document.querySelectorAll('.option');
-var isCorrect=(selected===currentWord.cn);
-if(isCorrect){
-st.correct++;
-correctCount++;
-score+=10;
-if(st.correct>=3){
-remainingSet.delete(currentWord.index);
-}
-}else{
-st.wrong++;
-wrongCount++;
-score=Math.max(0,score-5);
-}
-for(var i=0;i<opts.length;i++){
-opts[i].classList.add('disabled');
-if(opts[i].getAttribute('data-cn')===currentWord.cn){
-opts[i].classList.add('correct');
-}else if(opts[i].getAttribute('data-cn')===selected&&!isCorrect){
-opts[i].classList.add('wrong');
-}
-}
-updateUI();
-}
-function resetStats(){
-if(confirm('重置所有进度？这将清除所有统计数据。')){
-correctCount=0;
-wrongCount=0;
-score=0;
-wordStatus={};
-updateFilteredWords();
-}
-}
-function speakWord(){
-if(!currentWord)return;
-if(synth.speaking)synth.cancel();
-var utterance=new SpeechSynthesisUtterance(currentWord.en);
-utterance.lang='en-US';
-utterance.rate=0.9;
-synth.speak(utterance);
-}
-function exportWeakList(){
-var list=[];
-for(var key in wordStatus){
-var st=wordStatus[key];
-var total=st.correct+st.wrong;
-if(total>0&&st.correct<3){
-var rate=st.wrong/total;
-list.push({en:st.en,cn:st.cn,correct:st.correct,wrong:st.wrong,rate:rate});
-}
-}
-list.sort(function(a,b){return b.rate-a.rate;});
-if(list.length===0){alert('暂无薄弱单词！');return;}
-var header='单词,中文,正确次数,错误次数,错误率\n';
-var body='';
-list.forEach(function(item){
-var pct=Math.round(item.rate*100);
-body+=item.en+','+item.cn+','+item.correct+','+item.wrong+','+pct+'%\n';
-});
-var blob=new Blob([header+body],{type:'text/csv;charset=utf-8;'});
-var link=document.createElement('a');
-link.href=URL.createObjectURL(blob);
-link.download='薄弱单词表.csv';
-link.click();
-}
-function switchUnit(unit){
-currentUnit=unit;
-document.querySelectorAll('.filter-btn').forEach(function(btn){
-btn.classList.toggle('active',btn.getAttribute('data-unit')===unit);
-});
-updateFilteredWords();
-}
-document.querySelectorAll('.filter-btn').forEach(function(btn){
-btn.addEventListener('click',function(){
-switchUnit(this.getAttribute('data-unit'));
-});
-});
-wordDisplay.addEventListener('click',speakWord);
-nextBtn.addEventListener('click',function(){
-if(!answered&&currentWord){
-var key=currentWord.en+'_'+currentWord.unit;
-var st=wordStatus[key];
-if(st&&st.correct<3){
-if(confirm('当前题目未作答，确定跳过吗？')){loadNewWord();}
-}
-else{loadNewWord();}
-}
-else{loadNewWord();}
-});
-resetBtn.addEventListener('click',resetStats);
-exportBtn.addEventListener('click',exportWeakList);
-updateFilteredWords();
+  // ===== 核心状态 =====
+  var RAW_WORDS = [];             // 将从CSV加载
+  var currentUnit = 'all';
+  var filteredWords = [];
+  var wordStatus = {};            // key: en, value: { correct, wrong, en, cn, unit }
+  var currentWord = null;
+  var correctCount = 0;
+  var wrongCount = 0;
+  var score = 0;
+  var answered = false;
+  var remainingSet = new Set();
+  var isDataReady = false;
+
+  // ===== DOM 引用 =====
+  var wordDisplay = document.getElementById('wordDisplay');
+  var optionsContainer = document.getElementById('optionsContainer');
+  var correctSpan = document.getElementById('correctCount');
+  var wrongSpan = document.getElementById('wrongCount');
+  var rateSpan = document.getElementById('rateDisplay');
+  var scoreSpan = document.getElementById('scoreDisplay');
+  var remainingSpan = document.getElementById('remainingDisplay');
+  var progressBar = document.getElementById('progressBar');
+  var unitLabel = document.getElementById('unitLabel');
+  var weakContainer = document.getElementById('weakItemsContainer');
+  var nextBtn = document.getElementById('nextBtn');
+  var resetBtn = document.getElementById('resetBtn');
+  var exportBtn = document.getElementById('exportBtn');
+  var synth = window.speechSynthesis;
+
+  // ===== 加载CSV =====
+  function loadCSV() {
+    fetch('vocabulary.csv')
+      .then(response => {
+        if (!response.ok) throw new Error('CSV文件加载失败，状态码: ' + response.status);
+        return response.text();
+      })
+      .then(csvText => {
+        parseCSV(csvText);
+        isDataReady = true;
+        updateFilteredWords();
+      })
+      .catch(error => {
+        console.error('加载词库出错:', error);
+        wordDisplay.textContent = '⚠️ 词库加载失败';
+        weakContainer.innerHTML = '<span style="color:#d14c4c;">请检查网络或刷新重试</span>';
+        // 使用硬编码的备用词库（极简版，仅用于演示）
+        useFallbackWords();
+        isDataReady = true;
+        updateFilteredWords();
+      });
+  }
+
+  function parseCSV(csvText) {
+    var lines = csvText.split('\n');
+    if (lines.length < 2) return;
+    // 跳过表头 (lines[0])
+    for (var i = 1; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (line === '') continue;
+      // 简单解析：按逗号分割，并处理可能的引号
+      var parts = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g);
+      if (parts && parts.length >= 3) {
+        var unit = parts[0].replace(/^"|"$/g, '').trim();
+        var en = parts[1].replace(/^"|"$/g, '').trim();
+        var cn = parts[2].replace(/^"|"$/g, '').trim();
+        if (en && cn) {
+          RAW_WORDS.push({ unit: unit, en: en, cn: cn });
+        }
+      }
+    }
+    console.log('✅ 从CSV加载了 ' + RAW_WORDS.length + ' 个单词');
+  }
+
+  // 备用词库（当CSV加载失败时使用）
+  function useFallbackWords() {
+    RAW_WORDS = [
+      {unit:"Unit 1", en:"spontaneous", cn:"自发的"},
+      {unit:"Unit 1", en:"prevailing", cn:"普遍的"},
+      {unit:"Unit 1", en:"swoon", cn:"痴迷"},
+      {unit:"Unit 2", en:"occupational", cn:"职业的"},
+      {unit:"Unit 2", en:"apparent", cn:"显而易见"}
+    ];
+    console.warn('⚠️ 使用备用词库，仅 ' + RAW_WORDS.length + ' 个词');
+  }
+
+  // ===== 核心逻辑 =====
+  function updateFilteredWords() {
+    if (!isDataReady) return;
+    if (currentUnit === 'all') {
+      filteredWords = RAW_WORDS.slice();
+    } else {
+      filteredWords = RAW_WORDS.filter(function(w) { return w.unit === currentUnit; });
+    }
+    // 初始化 wordStatus（只存 en 为 key）
+    filteredWords.forEach(function(w) {
+      if (!wordStatus[w.en]) {
+        wordStatus[w.en] = { correct: 0, wrong: 0, en: w.en, cn: w.cn, unit: w.unit };
+      }
+    });
+    // 重建 remainingSet
+    remainingSet = new Set();
+    filteredWords.forEach(function(w, idx) {
+      if (wordStatus[w.en].correct < 3) {
+        remainingSet.add(idx);
+      }
+    });
+    unitLabel.textContent = currentUnit === 'all' ? '全部' : currentUnit.replace('Unit ', 'U');
+    updateUI();
+    if (filteredWords.length > 0 && remainingSet.size > 0) {
+      loadNewWord();
+    } else if (filteredWords.length > 0 && remainingSet.size === 0) {
+      wordDisplay.textContent = '🎉 全部记住！';
+      optionsContainer.innerHTML = '';
+      answered = true;
+    } else {
+      wordDisplay.textContent = '无单词';
+      optionsContainer.innerHTML = '';
+    }
+  }
+
+  function updateUI() {
+    var total = filteredWords.length || 1;
+    var done = total - remainingSet.size;
+    var pct = Math.round((done / total) * 100);
+    progressBar.style.width = Math.min(pct, 100) + '%';
+    correctSpan.textContent = correctCount;
+    wrongSpan.textContent = wrongCount;
+    var all = correctCount + wrongCount;
+    rateSpan.textContent = all ? Math.round((correctCount / all) * 100) + '%' : '0%';
+    scoreSpan.textContent = score;
+    remainingSpan.textContent = remainingSet.size;
+    updateWeakList();
+  }
+
+  function updateWeakList() {
+    var list = [];
+    var unitSet = new Set(filteredWords.map(function(w) { return w.en; }));
+    for (var en in wordStatus) {
+      if (!unitSet.has(en)) continue;
+      var st = wordStatus[en];
+      var total = st.correct + st.wrong;
+      if (total > 0 && st.correct < 3) {
+        var rate = st.wrong / total;
+        list.push({ en: st.en, cn: st.cn, rate: rate, wrong: st.wrong, total: total });
+      }
+    }
+    list.sort(function(a, b) { return b.rate - a.rate; });
+    if (list.length === 0) {
+      weakContainer.innerHTML = '<span style="color:#97abcc;font-size:14px;">🎉 暂无薄弱词，继续加油！</span>';
+      return;
+    }
+    var html = '';
+    list.forEach(function(item) {
+      var pct = Math.round(item.rate * 100);
+      html += '<span class="weak-tag">' + item.en + ' <span class="badge">' + pct + '%</span></span>';
+    });
+    weakContainer.innerHTML = html;
+  }
+
+  function loadNewWord() {
+    if (!isDataReady) return;
+    if (remainingSet.size === 0) {
+      wordDisplay.textContent = '🎉 全部记住！';
+      optionsContainer.innerHTML = '';
+      answered = true;
+      return;
+    }
+    var remainingIndices = Array.from(remainingSet);
+    var randIdx = remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
+    var word = filteredWords[randIdx];
+    currentWord = { index: randIdx, en: word.en, cn: word.cn, unit: word.unit };
+    wordDisplay.textContent = word.en;
+    generateOptions(word.cn);
+    answered = false;
+  }
+
+  function generateOptions(correctCn) {
+    var candidates = [];
+    var cnSet = new Set();
+    cnSet.add(correctCn);
+    candidates.push(correctCn);
+    var pool = filteredWords.map(function(w) { return w.cn; });
+    var shuffled = pool.slice().sort(function() { return Math.random() - 0.5; });
+    for (var i = 0; i < shuffled.length && candidates.length < 4; i++) {
+      if (!cnSet.has(shuffled[i])) {
+        cnSet.add(shuffled[i]);
+        candidates.push(shuffled[i]);
+      }
+    }
+    while (candidates.length < 4) {
+      var fallback = ['正确选项', '干扰项A', '干扰项B', '干扰项C'];
+      if (!cnSet.has(fallback[candidates.length])) {
+        candidates.push(fallback[candidates.length]);
+      }
+    }
+    var shuffledOptions = candidates.sort(function() { return Math.random() - 0.5; });
+    var html = '';
+    for (var i = 0; i < shuffledOptions.length; i++) {
+      html += '<div class="option" data-cn="' + shuffledOptions[i] + '">' + shuffledOptions[i] + '</div>';
+    }
+    optionsContainer.innerHTML = html;
+    var opts = document.querySelectorAll('.option');
+    for (var j = 0; j < opts.length; j++) {
+      opts[j].addEventListener('click', function(e) {
+        if (answered) return;
+        var selected = e.target.getAttribute('data-cn');
+        handleAnswer(selected);
+      });
+    }
+  }
+
+  function handleAnswer(selected) {
+    answered = true;
+    var st = wordStatus[currentWord.en];
+    var opts = document.querySelectorAll('.option');
+    var isCorrect = (selected === currentWord.cn);
+    if (isCorrect) {
+      st.correct++;
+      correctCount++;
+      score += 10;
+      if (st.correct >= 3) {
+        remainingSet.delete(currentWord.index);
+      }
+    } else {
+      st.wrong++;
+      wrongCount++;
+      score = Math.max(0, score - 5);
+    }
+    for (var i = 0; i < opts.length; i++) {
+      opts[i].classList.add('disabled');
+      if (opts[i].getAttribute('data-cn') === currentWord.cn) {
+        opts[i].classList.add('correct');
+      } else if (opts[i].getAttribute('data-cn') === selected && !isCorrect) {
+        opts[i].classList.add('wrong');
+      }
+    }
+    updateUI();
+  }
+
+  // ===== 重置 =====
+  function resetStats() {
+    if (confirm('重置所有进度？这将清除所有统计数据。')) {
+      correctCount = 0;
+      wrongCount = 0;
+      score = 0;
+      wordStatus = {};
+      updateFilteredWords();
+    }
+  }
+
+  // ===== TTS =====
+  function speakWord() {
+    if (!currentWord) return;
+    if (synth.speaking) synth.cancel();
+    var utterance = new SpeechSynthesisUtterance(currentWord.en);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    synth.speak(utterance);
+  }
+
+  // ===== 导出薄弱表（修复版）=====
+  function exportWeakList() {
+    var list = [];
+    // 统计当前单元的所有单词（包括已记住的）
+    var unitSet = new Set(filteredWords.map(function(w) { return w.en; }));
+    for (var en in wordStatus) {
+      if (!unitSet.has(en)) continue;
+      var st = wordStatus[en];
+      var total = st.correct + st.wrong;
+      // 只导出有学习记录且正确次数<3的单词；如果所有词都记住了，则导出所有词（此时正确率100%）
+      if (total > 0 && st.correct < 3) {
+        var rate = st.wrong / total;
+        list.push({ en: st.en, cn: st.cn, correct: st.correct, wrong: st.wrong, rate: rate });
+      } else if (total > 0 && st.correct >= 3 && remainingSet.size === 0) {
+        // 全部记住时，导出所有词，错误率为0
+        list.push({ en: st.en, cn: st.cn, correct: st.correct, wrong: st.wrong, rate: 0 });
+      }
+    }
+    // 如果 list 为空（例如从未练习过），提示并返回
+    if (list.length === 0) {
+      alert('暂无学习记录，请先进行训练。');
+      return;
+    }
+    // 按错误率降序排列
+    list.sort(function(a, b) { return b.rate - a.rate; });
+    var header = '单词,中文,正确次数,错误次数,错误率\n';
+    var body = '';
+    list.forEach(function(item) {
+      var pct = Math.round(item.rate * 100);
+      body += item.en + ',' + item.cn + ',' + item.correct + ',' + item.wrong + ',' + pct + '%\n';
+    });
+    var blob = new Blob([header + body], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '薄弱单词表.csv';
+    link.click();
+  }
+
+  // ===== 切换单元 =====
+  function switchUnit(unit) {
+    currentUnit = unit;
+    document.querySelectorAll('.filter-btn').forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-unit') === unit);
+    });
+    updateFilteredWords();
+  }
+
+  // ===== 事件绑定 =====
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      switchUnit(this.getAttribute('data-unit'));
+    });
+  });
+  wordDisplay.addEventListener('click', speakWord);
+  nextBtn.addEventListener('click', function() {
+    if (!isDataReady) return;
+    if (!answered && currentWord) {
+      var st = wordStatus[currentWord.en];
+      if (st && st.correct < 3) {
+        if (confirm('当前题目未作答，确定跳过吗？')) { loadNewWord(); }
+      } else { loadNewWord(); }
+    } else { loadNewWord(); }
+  });
+  resetBtn.addEventListener('click', resetStats);
+  exportBtn.addEventListener('click', exportWeakList);
+
+  // ===== 启动应用 =====
+  loadCSV();
 })();
 </script>
 </body>
