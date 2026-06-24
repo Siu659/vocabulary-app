@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>单词训练 · 智能记忆</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+      background: #f2f5fc;
+      min-height: 100vh;
+      padding: 18px 14px 40px;
+      display: flex;
+      justify-content: center;
+      color: #1a2639;
+    }
+    .app {
+      max-width: 500px;
+      width: 100%;
+    }
+    .card {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      background: #ffffff;
+      border-radius: 32px;
+      padding: 20px 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 30px rgba(0, 20, 40, 0.06), 0 2px 8px rgba(0,0,0,0.02);
+      border: 1px solid rgba(255,255,255,0.5);
+      transition: all 0.15s;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .title {
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.3px;
+      background: linear-gradient(145deg, #1e2b4f, #2d3f6e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .unit-badge {
+      background: #eef3fe;
+      border-radius: 40px;
+      padding: 6px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #2d4b8a;
+      border: 1px solid #d7e2fc;
+      white-space: nowrap;
+    }
+    .filter-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0 12px 0;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: nowrap;
+    }
+    .filter-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .filter-btn {
+      flex: 0 0 auto;
+      background: #f0f4fe;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 40px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #2b3f6b;
+      transition: 0.12s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: #1e3a7a;
+      color: white;
+      box-shadow: 0 6px 14px rgba(30, 58, 122, 0.18);
+      border-color: #1e3a7a;
+    }
+    .filter-btn:active {
+      transform: scale(0.94);
+    }
+    .word-block {
+      text-align: center;
+      padding: 20px 0 10px;
+    }
+    .word-en {
+      font-size: 34px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #0b1a33;
+      cursor: pointer;
+      display: inline-block;
+      padding: 6px 20px;
+      border-radius: 60px;
+      transition: background 0.1s;
+      user-select: none;
+    }
+    .word-en:active {
+      background: #eef3fc;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 18px 0 8px;
+    }
+    .option {
+      background: #f6f9ff;
+      padding: 14px 6px;
+      border-radius: 20px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1f2e4a;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      border: 1.5px solid #eef3fc;
+      transition: all 0.1s;
+      cursor: pointer;
+      word-break: break-word;
+      line-height: 1.3;
+    }
+    .option:active {
+      transform: scale(0.96);
+      background: #e4ecfe;
+    }
+    .option.correct {
+      background: #c7f0d0;
+      border-color: #34a85a;
+      color: #0b4220;
+    }
+    .option.wrong {
+      background: #fcd4d4;
+      border-color: #d14c4c;
+      color: #6b1a1a;
+    }
+    .option.disabled {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    .action-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      flex: 1;
+      background: #1e3a7a;
+      border: none;
+      padding: 14px 10px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 16px;
+      color: white;
+      box-shadow: 0 6px 14px rgba(30, 58, 122, 0.15);
+      cursor: pointer;
+      transition: 0.12s;
+      text-align: center;
+      min-width: 80px;
+    }
+    .btn:active {
+      transform: scale(0.95);
+      background: #16315f;
+    }
+    .btn-outline {
+      background: transparent;
+      color: #1e3a7a;
+      box-shadow: none;
+      border: 1.5px solid #d0def0;
+    }
+    .btn-outline:active {
+      background: #eef3fc;
+    }
+    .stats-grid {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 6px;
+      font-size: 15px;
+      color: #2a3b5e;
+      padding: 6px 0;
+    }
+    .stats-grid span {
+      font-weight: 500;
+    }
+    .stats-grid .num {
+      font-weight: 700;
+      color: #0b1a33;
+      margin-left: 4px;
+    }
+    .progress-wrap {
+      background: #e9eff8;
+      height: 8px;
+      border-radius: 20px;
+      margin: 14px 0 6px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #3964d6, #6990f0);
+      border-radius: 20px;
+      transition: width 0.25s;
+    }
+    .weak-list {
+      margin-top: 12px;
+      background: #f8faff;
+      border-radius: 24px;
+      padding: 12px 14px;
+      border: 1px solid #e3ecfc;
+    }
+    .weak-title {
+      font-weight: 600;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      color: #1d345c;
+    }
+    .weak-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      padding-top: 8px;
+      font-size: 14px;
+    }
+    .weak-tag {
+      background: #eef3fe;
+      padding: 4px 14px;
+      border-radius: 30px;
+      color: #1e3a7a;
+    }
+    .weak-tag .badge {
+      background: #d14c4c;
+      color: white;
+      border-radius: 30px;
+      padding: 0 8px;
+      margin-left: 4px;
+      font-size: 11px;
+    }
+    .footer-note {
+      font-size: 13px;
+      color: #7789b0;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .export-btn {
+      background: #e9f0fc;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 40px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1e3a7a;
+      cursor: pointer;
+      transition: 0.1s;
+      border: 1px solid #d2e0f5;
+    }
+    .export-btn:active {
+      background: #d2e0f5;
+    }
+    @media (max-width: 460px) {
+      .options-grid { gap: 8px; }
+      .option { font-size: 15px; padding: 12px 4px; }
+      .word-en { font-size: 28px; }
+      .card { padding: 16px 14px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- 标题 + 单元 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="title">📘 单词训练</span>
+      <span class="unit-badge" id="unitLabel">全部</span>
+    </div>
+    <div class="filter-scroll" id="filterContainer">
+      <button class="filter-btn active" data-unit="all">📚 全部</button>
+      <button class="filter-btn" data-unit="Unit 1 Love and Romance">❤️ Unit1</button>
+      <button class="filter-btn" data-unit="Unit 2 Fasion">👗 Unit2</button>
+      <button class="filter-btn" data-unit="Unit 3 Jobs & Careers">💼 Unit3</button>
+      <button class="filter-btn" data-unit="Unit 4 Leadership">🧑‍💼 Unit4</button>
+      <button class="filter-btn" data-unit="Unit 5 Technology and Life">📱 Unit5</button>
+      <button class="filter-btn" data-unit="Unit 6 Information and Society">🌐 Unit6</button>
+    </div>
+  </div>
+
+  <!-- 主训练卡 -->
+  <div class="card">
+    <div class="word-block">
+      <div class="word-en" id="wordDisplay">点击开始</div>
+    </div>
+    <div class="options-grid" id="optionsContainer"></div>
+    <div class="action-row">
+      <button class="btn" id="nextBtn">▶ 下一题</button>
+      <button class="btn btn-outline" id="resetBtn">↺ 重置</button>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- 统计 + 积分 -->
+  <div class="card">
+    <div class="stats-grid">
+      <span>✅ 正确 <span class="num" id="correctCount">0</span></span>
+      <span>❌ 错误 <span class="num" id="wrongCount">0</span></span>
+      <span>🎯 准确率 <span class="num" id="rateDisplay">0%</span></span>
+      <span>⭐ 积分 <span class="num" id="scoreDisplay">0</span></span>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+      <span style="font-size:14px; color:#2d4b8a;">📌 剩余 <span id="remainingDisplay">0</span> 词</span>
+      <button class="export-btn" id="exportBtn">📤 导出薄弱表</button>
+    </div>
+  </div>
+
+  <!-- 薄弱单词清单 -->
+  <div class="card weak-list" id="weakListCard">
+    <div class="weak-title">
+      <span>📋 薄弱单词</span>
+      <span style="font-weight:400; font-size:13px; color:#6783b0;">错误率越高越靠前</span>
+    </div>
+    <div class="weak-items" id="weakItemsContainer">
+      <span style="color:#97abcc; font-size:14px;">暂无薄弱词，继续练习吧</span>
+    </div>
+  </div>
+
+  <div class="footer-note">点击单词可发音 · 答对3次即“记住”</div>
+</div>
+
+<script>
+  (function(){
+    // ======================= 词库 (完整) ============================
+    const RAW_WORDS = [
+      { unit: "Unit 1 Love and Romance", en: "spontaneous", cn: "自发的，情不自禁的" },
+      { unit: "Unit 1 Love and Romance", en: "prevailing", cn: "普遍的，盛行的" },
+      { unit: "Unit 1 Love and Romance", en: "swoon", cn: "痴迷，为……神魂颠倒" },
+      { unit: "Unit 1 Love and Romance", en: "dynastic", cn: "王朝的" },
+      { unit: "Unit 1 Love and Romance", en: "foible", cn: "怪癖，小缺点" },
+      { unit: "Unit 1 Love and Romance", en: "crutially", cn: "至关重要地" },
+      { unit: "Unit 1 Love and Romance", en: "aesthetic", cn: "艺术的，审美的" },
+      { unit: "Unit 1 Love and Romance", en: "lay ... at the door of", cn: "归咎于" },
+      { unit: "Unit 1 Love and Romance", en: "impediment", cn: "阻碍，障碍" },
+      { unit: "Unit 1 Love and Romance", en: "impassioned", cn: "充满激情的，热烈的" },
+      { unit: "Unit 1 Love and Romance", en: "realism", cn: "现实性，逼真" },
+      { unit: "Unit 1 Love and Romance", en: "narrative", cn: "叙述，叙事" },
+      { unit: "Unit 1 Love and Romance", en: "unwittingly", cn: "无意地" },
+      { unit: "Unit 1 Love and Romance", en: "devilish", cn: "魔鬼般的" },
+      { unit: "Unit 1 Love and Romance", en: "cursed", cn: "被诅咒的" },
+      { unit: "Unit 1 Love and Romance", en: "convent", cn: "修道院； 修女学校" },
+      { unit: "Unit 1 Love and Romance", en: "heady", cn: "令人陶醉的" },
+      { unit: "Unit 1 Love and Romance", en: "transcendent", cn: "卓越的，杰出的" },
+      { unit: "Unit 1 Love and Romance", en: "humdrum", cn: "单调的，乏味的" },
+      { unit: "Unit 1 Love and Romance", en: "domestic chores", cn: "家务活" },
+      { unit: "Unit 1 Love and Romance", en: "linen cupboard", cn: "日用织品橱柜" },
+      { unit: "Unit 1 Love and Romance", en: "clumsy", cn: "笨拙的" },
+      { unit: "Unit 1 Love and Romance", en: "embark", cn: "开始，着手" },
+      { unit: "Unit 1 Love and Romance", en: "louche", cn: "名声狼藉的" },
+      { unit: "Unit 1 Love and Romance", en: "squarely", cn: "直截了当的" },
+      { unit: "Unit 1 Love and Romance", en: "wry", cn: "讽刺的；揶揄的" },
+      { unit: "Unit 1 Love and Romance", en: "delude", cn: "欺骗" },
+      { unit: "Unit 1 Love and Romance", en: "rationable", cn: "根本原因，逻辑依据" },
+      { unit: "Unit 1 Love and Romance", en: "banal", cn: "平庸的，乏味的" },
+      { unit: "Unit 2 Fasion", en: "occupational", cn: "职业的" },
+      { unit: "Unit 2 Fasion", en: "apparent", cn: "显而易见" },
+      { unit: "Unit 2 Fasion", en: "compare with", cn: "与……相比" },
+      { unit: "Unit 2 Fasion", en: "trend", cn: "趋势" },
+      { unit: "Unit 2 Fasion", en: "identify", cn: "辨认" },
+      { unit: "Unit 2 Fasion", en: "manage with", cn: "用……对付过去" },
+      { unit: "Unit 2 Fasion", en: "hang over", cn: "搭在……之上" },
+      { unit: "Unit 2 Fasion", en: "agora", cn: "（古希腊）市场" },
+      { unit: "Unit 2 Fasion", en: "arrogance", cn: "自负" },
+      { unit: "Unit 2 Fasion", en: "be entitled to", cn: "有……的资格" },
+      { unit: "Unit 2 Fasion", en: "luxury", cn: "奢侈，奢侈品" },
+      { unit: "Unit 2 Fasion", en: "inform about", cn: "通知，告知" },
+      { unit: "Unit 2 Fasion", en: "dominate", cn: "支配，占优势" },
+      { unit: "Unit 2 Fasion", en: "in a heartbeat", cn: "立即" },
+      { unit: "Unit 2 Fasion", en: "authentic", cn: "真实的，可靠的" },
+      { unit: "Unit 2 Fasion", en: "inherent", cn: "固有的" },
+      { unit: "Unit 2 Fasion", en: "show off", cn: "炫耀" },
+      { unit: "Unit 2 Fasion", en: "stand out", cn: "突出" },
+      { unit: "Unit 2 Fasion", en: "in debt to", cn: "欠债" },
+      { unit: "Unit 2 Fasion", en: "corset", cn: "紧身内衣" },
+      { unit: "Unit 2 Fasion", en: "bourgeoisie", cn: "资产阶级，中产阶级" },
+      { unit: "Unit 2 Fasion", en: "Rococo", cn: "洛可可风格" },
+      { unit: "Unit 2 Fasion", en: "pastel", cn: "清淡的，柔和的" },
+      { unit: "Unit 2 Fasion", en: "hallmark", cn: "标志" },
+      { unit: "Unit 2 Fasion", en: "Haute Couture", cn: "高级定制时装" },
+      { unit: "Unit 2 Fasion", en: "boutique", cn: "精品" },
+      { unit: "Unit 2 Fasion", en: "prosper", cn: "繁盛" },
+      { unit: "Unit 2 Fasion", en: "break out", cn: "爆发" },
+      { unit: "Unit 2 Fasion", en: "indispensable", cn: "不可缺少的" },
+      { unit: "Unit 2 Fasion", en: "cliché", cn: "陈词滥调" },
+      { unit: "Unit 2 Fasion", en: "turn/stand on its head", cn: "倒立，完全相反" },
+      { unit: "Unit 2 Fasion", en: "remind of", cn: "使……想起" },
+      { unit: "Unit 2 Fasion", en: "obsolete", cn: "过时的" },
+      { unit: "Unit 2 Fasion", en: "incorporate", cn: "吸收，合并" },
+      { unit: "Unit 3 Jobs & Careers", en: "venture", cn: "企业" },
+      { unit: "Unit 3 Jobs & Careers", en: "delve into", cn: "探究" },
+      { unit: "Unit 3 Jobs & Careers", en: "eclectic", cn: "广泛的" },
+      { unit: "Unit 3 Jobs & Careers", en: "stall", cn: "摊位" },
+      { unit: "Unit 3 Jobs & Careers", en: "cuisine", cn: "美食" },
+      { unit: "Unit 3 Jobs & Careers", en: "starter", cn: "创业者" },
+      { unit: "Unit 3 Jobs & Careers", en: "hit the scene", cn: "登场" },
+      { unit: "Unit 3 Jobs & Careers", en: "rut", cn: "车辙" },
+      { unit: "Unit 3 Jobs & Careers", en: "stuck in a rut", cn: "刻板乏味" },
+      { unit: "Unit 3 Jobs & Careers", en: "regular", cn: "常备军" },
+      { unit: "Unit 3 Jobs & Careers", en: "be frustrated with", cn: "对……感到沮丧" },
+      { unit: "Unit 3 Jobs & Careers", en: "navigate", cn: "找到正确的方法（对付困难的情况）" },
+      { unit: "Unit 3 Jobs & Careers", en: "clutter", cn: "杂乱" },
+      { unit: "Unit 3 Jobs & Careers", en: "spot", cn: "发现" },
+      { unit: "Unit 3 Jobs & Careers", en: "directory listing", cn: "目录列表" },
+      { unit: "Unit 3 Jobs & Careers", en: "foray", cn: "尝试" },
+      { unit: "Unit 3 Jobs & Careers", en: "array", cn: "一批" },
+      { unit: "Unit 3 Jobs & Careers", en: "take off", cn: "流行" },
+      { unit: "Unit 3 Jobs & Careers", en: "renovate", cn: "整修" },
+      { unit: "Unit 3 Jobs & Careers", en: "cosy", cn: "温馨的" },
+      { unit: "Unit 3 Jobs & Careers", en: "ambience", cn: "气氛" },
+      { unit: "Unit 3 Jobs & Careers", en: "join force with", cn: "联手" },
+      { unit: "Unit 3 Jobs & Careers", en: "acquire", cn: "收购" },
+      { unit: "Unit 3 Jobs & Careers", en: "affordable", cn: "买得起" },
+      { unit: "Unit 3 Jobs & Careers", en: "hawker fare", cn: "街头小吃" },
+      { unit: "Unit 3 Jobs & Careers", en: "twist", cn: "结合" },
+      { unit: "Unit 3 Jobs & Careers", en: "flow in", cn: "汇入" },
+      { unit: "Unit 3 Jobs & Careers", en: "take a leap of faith", cn: "放手一搏" },
+      { unit: "Unit 3 Jobs & Careers", en: "naysayer", cn: "反对者" },
+      { unit: "Unit 3 Jobs & Careers", en: "junkie", cn: "对……上瘾的人" },
+      { unit: "Unit 3 Jobs & Careers", en: "pay heed to", cn: "关注" },
+      { unit: "Unit 3 Jobs & Careers", en: "heckle", cn: "责问" },
+      { unit: "Unit 3 Jobs & Careers", en: "fledgling", cn: "新建的" },
+      { unit: "Unit 3 Jobs & Careers", en: "established", cn: "致命的" },
+      { unit: "Unit 3 Jobs & Careers", en: "hold back", cn: "犹豫" },
+      { unit: "Unit 3 Jobs & Careers", en: "robust", cn: "有力的" },
+      { unit: "Unit 3 Jobs & Careers", en: "uncharted", cn: "未知的" },
+      { unit: "Unit 3 Jobs & Careers", en: "awry", cn: "错误地" },
+      { unit: "Unit 3 Jobs & Careers", en: "venture into", cn: "冒险进入" },
+      { unit: "Unit 3 Jobs & Careers", en: "sell off", cn: "低价售出" },
+      { unit: "Unit 3 Jobs & Careers", en: "bruising", cn: "惨痛的" },
+      { unit: "Unit 3 Jobs & Careers", en: "cut out for", cn: "适合于" },
+      { unit: "Unit 3 Jobs & Careers", en: "fickle", cn: "变化无常的" },
+      { unit: "Unit 3 Jobs & Careers", en: "stumble", cn: "失足" },
+      { unit: "Unit 3 Jobs & Careers", en: "invaluable", cn: "珍贵的" },
+      { unit: "Unit 3 Jobs & Careers", en: "manic", cn: "疯狂的" },
+      { unit: "Unit 3 Jobs & Careers", en: "flip", cn: "打开" },
+      { unit: "Unit 3 Jobs & Careers", en: "field", cn: "答复" },
+      { unit: "Unit 3 Jobs & Careers", en: "save on", cn: "节省" },
+      { unit: "Unit 3 Jobs & Careers", en: "grind", cn: "苦差事" },
+      { unit: "Unit 3 Jobs & Careers", en: "juggle", cn: "兼顾" },
+      { unit: "Unit 3 Jobs & Careers", en: "entrepreneur", cn: "企业家" },
+      { unit: "Unit 3 Jobs & Careers", en: "reap", cn: "收获" },
+      { unit: "Unit 3 Jobs & Careers", en: "vision", cn: "设想" },
+      { unit: "Unit 3 Jobs & Careers", en: "persevere", cn: "坚持" },
+      { unit: "Unit 4 Leadership", en: "vex", cn: "使烦恼；使恼怒" },
+      { unit: "Unit 4 Leadership", en: "consultant", cn: "顾问" },
+      { unit: "Unit 4 Leadership", en: "seniority", cn: "年资，资历；年长" },
+      { unit: "Unit 4 Leadership", en: "hierarchy", cn: "层级；等级制度" },
+      { unit: "Unit 4 Leadership", en: "executive", cn: "主管，经理" },
+      { unit: "Unit 4 Leadership", en: "guarantee", cn: "保证，担保" },
+      { unit: "Unit 4 Leadership", en: "worship", cn: "崇拜，景仰" },
+      { unit: "Unit 4 Leadership", en: "personal attribute", cn: "个人属性；个人特质" },
+      { unit: "Unit 4 Leadership", en: "domineering", cn: "跋扈的，专横的" },
+      { unit: "Unit 4 Leadership", en: "charismatic", cn: "魅力超凡的，有感召力的" },
+      { unit: "Unit 4 Leadership", en: "extroverted", cn: "性格外向的" },
+      { unit: "Unit 4 Leadership", en: "synonymous", cn: "同义的；同义词的；同义突变的" },
+      { unit: "Unit 4 Leadership", en: "downline", cn: "沿铁路线；下线" },
+      { unit: "Unit 4 Leadership", en: "P&L responsibility", cn: "profit and loss responsibility 损益责任" },
+      { unit: "Unit 4 Leadership", en: "coordinate", cn: "调节，配合；使动作协调" },
+      { unit: "Unit 4 Leadership", en: "tautology", cn: "同义反复；无谓的重复" },
+      { unit: "Unit 4 Leadership", en: "utter", cn: "说出；发出，表达" },
+      { unit: "Unit 4 Leadership", en: "routine", cn: "常规的，例行的" },
+      { unit: "Unit 4 Leadership", en: "subordinate", cn: "部属，下属，下级；从属，次要" },
+      { unit: "Unit 4 Leadership", en: "by default", cn: "默认情况下" },
+      { unit: "Unit 4 Leadership", en: "capacity", cn: "能力；容量" },
+      { unit: "Unit 4 Leadership", en: "vision", cn: "视力；美景；眼力；幻想；想象力" },
+      { unit: "Unit 4 Leadership", en: "empower", cn: "授权，允许；使能够" },
+      { unit: "Unit 4 Leadership", en: "rioting", cn: "暴乱" },
+      { unit: "Unit 4 Leadership", en: "hooligan", cn: "阿飞；小流氓" },
+      { unit: "Unit 4 Leadership", en: "misalign", cn: "不重合，偏位" },
+      { unit: "Unit 4 Leadership", en: "minimalism", cn: "极简派艺术；极简主义" },
+      { unit: "Unit 4 Leadership", en: "reduction", cn: "减少；下降；缩小" },
+      { unit: "Unit 4 Leadership", en: "victim", cn: "受害人，牺牲品，牺牲者" },
+      { unit: "Unit 4 Leadership", en: "omit", cn: "省略；遗漏" },
+      { unit: "Unit 4 Leadership", en: "inclusion", cn: "包含；内含物" },
+      { unit: "Unit 4 Leadership", en: "discretionary", cn: "任意的；酌情决定的" },
+      { unit: "Unit 5 Technology and Life", en: "gesture", cn: "表示" },
+      { unit: "Unit 5 Technology and Life", en: "affection", cn: "喜欢" },
+      { unit: "Unit 5 Technology and Life", en: "interact", cn: "互动" },
+      { unit: "Unit 5 Technology and Life", en: "blind date", cn: "经介绍的第一次约会" },
+      { unit: "Unit 5 Technology and Life", en: "stamp", cn: "标出" },
+      { unit: "Unit 5 Technology and Life", en: "inscription", cn: "题词" },
+      { unit: "Unit 5 Technology and Life", en: "render", cn: "致使" },
+      { unit: "Unit 5 Technology and Life", en: "for the benefit of", cn: "为了……的利益" },
+      { unit: "Unit 5 Technology and Life", en: "companion", cn: "同伴" },
+      { unit: "Unit 5 Technology and Life", en: "evangelize", cn: "向……传播" },
+      { unit: "Unit 5 Technology and Life", en: "self-imposed", cn: "自我强加的" },
+      { unit: "Unit 5 Technology and Life", en: "banish", cn: "清除，废除" },
+      { unit: "Unit 5 Technology and Life", en: "stumble upon", cn: "偶然遇到" },
+      { unit: "Unit 5 Technology and Life", en: "avatar", cn: "（网络）头像，化身" },
+      { unit: "Unit 5 Technology and Life", en: "interface", cn: "界面" },
+      { unit: "Unit 5 Technology and Life", en: "risky", cn: "危险的" },
+      { unit: "Unit 5 Technology and Life", en: "documentary", cn: "纪录片" },
+      { unit: "Unit 5 Technology and Life", en: "illusion", cn: "幻想" },
+      { unit: "Unit 5 Technology and Life", en: "intimacy", cn: "亲密" },
+      { unit: "Unit 5 Technology and Life", en: "negotiation", cn: "谈判" },
+      { unit: "Unit 5 Technology and Life", en: "relegation", cn: "移交，驱逐" },
+      { unit: "Unit 5 Technology and Life", en: "chronic", cn: "长期的" },
+      { unit: "Unit 5 Technology and Life", en: "compulsively", cn: "无法控制地；有强迫症地" },
+      { unit: "Unit 5 Technology and Life", en: "invest in", cn: "投资" },
+      { unit: "Unit 5 Technology and Life", en: "designate", cn: "把……定为" },
+      { unit: "Unit 5 Technology and Life", en: "snobby", cn: "势力的" },
+      { unit: "Unit 5 Technology and Life", en: "furtively", cn: "偷偷地" },
+      { unit: "Unit 5 Technology and Life", en: "zinger", cn: "风趣的话" },
+      { unit: "Unit 6 Information and Society", en: "self-evident", cn: "不言自明的" },
+      { unit: "Unit 6 Information and Society", en: "hierarchy", cn: "等级制度" },
+      { unit: "Unit 6 Information and Society", en: "nothing but", cn: "仅仅" },
+      { unit: "Unit 6 Information and Society", en: "reproduce", cn: "繁殖" },
+      { unit: "Unit 6 Information and Society", en: "overlap", cn: "重叠，交叉" },
+      { unit: "Unit 6 Information and Society", en: "utopia", cn: "乌托邦，理想国" },
+      { unit: "Unit 6 Information and Society", en: "rear its head", cn: "（不愉快的东西）出现" },
+      { unit: "Unit 6 Information and Society", en: "adaptive", cn: "有适应能力的" },
+      { unit: "Unit 6 Information and Society", en: "embed", cn: "嵌入" },
+      { unit: "Unit 6 Information and Society", en: "primate", cn: "灵长类动物" },
+      { unit: "Unit 6 Information and Society", en: "split up into", cn: "分成" },
+      { unit: "Unit 6 Information and Society", en: "isolate from", cn: "使与……隔离" },
+      { unit: "Unit 6 Information and Society", en: "interweave", cn: "（使）交织" },
+      { unit: "Unit 6 Information and Society", en: "proximity", cn: "接近" },
+      { unit: "Unit 6 Information and Society", en: "facilitate", cn: "促进" },
+      { unit: "Unit 6 Information and Society", en: "dispersal", cn: "传播" },
+      { unit: "Unit 6 Information and Society", en: "coordinate", cn: "（使）协调" },
+      { unit: "Unit 6 Information and Society", en: "equivalent", cn: "相等的" },
+      { unit: "Unit 6 Information and Society", en: "optimal", cn: "最佳的" },
+      { unit: "Unit 6 Information and Society", en: "collective", cn: "集体的" },
+      {
